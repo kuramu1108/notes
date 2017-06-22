@@ -30,7 +30,7 @@ Delegates (Named method):
 public delegate string Formatter(int value)
 public static string SthFormat(int value)
 public static void foo(Formatter format){
-    format(1);
+format(1);
 }
 foo(SthFormat);
 ```
@@ -40,11 +40,11 @@ Anonymous methods:
 - the compiler creates an ordinary method with an auto generated name
 ```C#
 Main() {
-    Formatter binary = delegate (int x)
-    {
-        return Convert.ToString(x, 2);
-    };
-    foo(binary);
+  Formatter binary = delegate (int x)
+  {
+    return Convert.ToString(x, 2);
+  };
+  foo(binary);
 }
 ```
 
@@ -62,8 +62,8 @@ Func<int, int, int> add = (x, y) => x + y;
 Func<int, int, int> subtract = (int x, int y) => x - y;
 Func<int, int, int> multiply = (int x, int y) =>
 {
-    int result = x*y;
-    return result;
+  int result = x*y;
+  return result;
 }
 ```
 
@@ -77,10 +77,11 @@ var user = new {Name = “Carol”, Age = 35};
 - Compiler automatically generates a class of readonly properties
 
 Implicitly typed variables:
-- Use var, automatically inferred from the expression by compiler
-- Variable is strongly typed
+  - Use var, automatically inferred from the expression by compiler
+  - Variable is strongly typed
 
-- Object Initializers:
+  - Object Initializers:
+
 ```C#
 var user = new User {FirstName = “Carol”, LastName = “Brady”};
 ```
@@ -94,20 +95,20 @@ Extension Methods:
 ```C#
 namespace MyExtensionMethod
 {
-    public static class StringConversions {
-            public static double ToDouble(this string s) {
-                return Double.Parse(s);
-            }
+  public static class StringConversions {
+    public static double ToDouble(this string s) {
+      return Double.Parse(s);
     }
+  }
 }
 
 using MyExtensionMethod;
 …
 {
-    {
-        string myString = “6”;
-        Console.WriteLine(myString.ToDouble());
-    }
+  {
+    string myString = “6”;
+    Console.WriteLine(myString.ToDouble());
+  }
 }
 ```
 - A static method declared in a static class (first parameter is modified by “this”)
@@ -117,3 +118,21 @@ using MyExtensionMethod;
 - Allow capabilities to be extended (e.g. LINQ) with a simple using statement
 
 what is the point?
+- Extension methods allow interfaces (such as IEnumerable and IQueryable) to have implementation
+
+LINQ:
+```C#
+var namesOfVoters = from c in db.Users
+                    where c.Age >= 18
+                    select c.LastName;
+foreach (var name in namesOfVoters)
+{
+  Console.WriteLine(name);
+}
+```
+
+LINQ can query:
+- collections/arrays
+- databases
+- XML
+- your own sources
