@@ -635,7 +635,7 @@ Content Pages:
 <uc:MyControl ID="UserDetails" runat="server"/>
 ```
 ### Application architectures
-####1-tier
+#### 1-tier
 
 ![1-tier](img/lec-4-1-tier.png)
 
@@ -649,7 +649,7 @@ Diadvantages
 - functionally unrelated code is contained in a single class
 - no shared data
 
-####2-tier
+#### 2-tier
 
 ![2-tier](img/lec-4-2-tier.png)
 
@@ -663,7 +663,7 @@ Disadvantages
 - difficult to share functionality
 - functionally unrelated code is contained in a single class
 
-####3-tier
+#### 3-tier
 
 ![3-tier](img/lec-4-3-tier.png)
 
@@ -676,7 +676,7 @@ Advantages
 Disadvantages
 - More complex
 
-####4-tier
+#### 4-tier
 
 ![4-tier](img/lec-4-4-tier.png)
 
