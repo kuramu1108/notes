@@ -280,7 +280,7 @@ ASP.NET:
 
 ### ASP
 Classic ASP (inline) style:
-```cs
+```html
 <%@ Page Language="C#" %>
 <!DOCTYPE html>
 <html>
@@ -299,7 +299,7 @@ Classic ASP (inline) style:
 
 ### ASP.NET WebForms:
 ASPX:
-```cs
+```html
 <%@ Page Language="C#"
     AutoEventWireup="true"
     CodeBehind="User.aspx.cs"
@@ -585,14 +585,14 @@ in web.config
 - known as "visual inheritance"
 
 Master:
-```cs
+```html
 <%@Master Language="C#" %>
 
 <asp:ContentPlaceHolder ID="Main" runat="server"/>
 ```
 
 Content Pages:
-```cs
+```html
 <%@Page Language="C#" MasterPageFile="Site.Master" %>
 
 <asp:Content ContentPlaceHolderID="Main" runat="server">
@@ -605,21 +605,23 @@ web applications often reuse functionality on multiple pages:
 - user controls (ASCX) can achieve this
 - custom components can be embedded like ordinary components
 
-```cs
+```html
 <%@Control Language="C#" CodeBehind="MyControl.ascx.cs" Inherits="App.MyControl" %>
 
 <asp:TextBox ID="FirstName" runat="server"></asp:TextBox>
 <asp:TextBox ID="LastName" runat="server"></asp:TextBox>
 ```
 Content Pages:
-```cs
+```html
 <%@Page Language="C#" %>
 
-<%@ Register Src="~/MyControl.ascx" TagPrefix="uc" TagName="MyControl" %> <uc:MyControl ID="UserDetails" runat="server"/>
+<%@ Register Src="~/MyControl.ascx" TagPrefix="uc" TagName="MyControl" %> 
+<uc:MyControl ID="UserDetails" runat="server"/>
 ```
 ### Application architectures
 1-tier
-![1-tier](img/lect-4-1-tier.png)
+
+![1-tier](img/lec-4-1-tier.png)
 Advantages
 - Extremely simple
 
@@ -631,7 +633,8 @@ Diadvantages
 - no shared data
 
 2-tier
-![2-tier](img/lect-4-2-tier.png)
+
+![2-tier](img/lec-4-2-tier.png)
 Advantages
 - Conceptually simple
 - Shared data
@@ -643,7 +646,8 @@ Disadvantages
 - functionally unrelated code is contained in a single class
 
 3-tier
-![3-tier](img/lect-4-3-tier.png)
+
+![3-tier](img/lec-4-3-tier.png)
 Advantages
 - easier testing
 - easier to modify user interface
@@ -654,7 +658,8 @@ Disadvantages
 - More complex
 
 4-tier
-![4-tier](img/lect-4-4-tier.png)
+
+![4-tier](img/lec-4-4-tier.png)
 Advantages
 - best for testing
 - more scalable
