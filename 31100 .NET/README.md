@@ -16,7 +16,18 @@
         - [Events](#events)
         - [State](#state)
         - [Redirect](#redirect)
-    - [Lecture 4](#lecture-4)
+    - [Lecture 4 More ASP.NET WebForms and Architecture](#lecture-4-more-asp-net-webforms-and-architecture)
+        - [Page life-cycle](#page-life-cycle)
+        - [Life-cycle events](#life-cycle-events)
+        - [Request and Response](#request-and-response)
+            - [a note on testing](#a-note-on-testing)
+        - [Redirect vs Transfer](#redirect-vs-transfer)
+        - [Sessions and Cookies](#sessions-and-cookies)
+        - [Authentication/Authorization](#authentication-authorization)
+        - [Master pages](#master-pages)
+        - [User controls](#user-controls)
+        - [Application architectures](#application-architectures)
+    - [Lecture 5 Data Access](#lecture-5-data-access)
 
 
 ## Lecture 1 Linq, enterprise dev practice
@@ -392,4 +403,267 @@ Server.Transfer("Other.aspx");
 `Response.Redirect` is more preferred as `Server.Transfer` does the redirect on the server so may result in misleading URLs
 e.g. A request to PageA.aspx, if transferred to PageB.aspx will retain the URL of PageA.aspx.
 
-## Lecture 4
+## Lecture 4 More ASP.NET WebForms and Architecture
+### Page life-cycle
+High Level understanding:
+- requested received
+- object instantiated
+- page set-up
+- `Page_Load` is called
+- control events are fired
+- response is sent to user
+
+Full page life-cucle:
+- Page request
+- Start
+  - PreInit
+- Initialization
+  - Init
+  - InitComplete
+  - PreLoad
+- Load
+  - Load
+- Postback events
+  - Control events
+  - LoadComplete
+  - PreRender
+  - PreRenderCoimplete
+  - SaveStateComplete
+- Rendering
+  - Render
+- Unload
+  - Unload
+
+### Life-cycle events
+Three approaches
+- AutoEventWireup
+```cs
+protected void Page_Load(object sender, EventArgs e)
+```
+if .aspx file having `AutoEventWireup="True"` define in the `<%@Page %>` tag, can write custom event handlers, just by defining a function prefixed by `Page_`
+- Delegates
+```cs
+Load += Listner;
+```
+programmatically wire up a delegate using event handlers, but may need to do this early (e.g. in constructor)
+- Virtual methods
+```cs
+protected override void OnLoad(EventArgs e)
+{
+  base.OnInit(e);
+}
+```
+directly override the event methods in `System.Web.UI.Page`, however, it is important to call the base event, otherwise the page may not be rendered properly
+
+### Request and Response
+- instance of each is available in a Page
+- Request
+  - HTTP GET/POST request properties
+  - Query string, cookies, parameters
+- Response
+  - Send HTTP response properties
+  - Redirects, cookies, HTML, headers
+
+```cs
+// Request
+Request.Headers["User-Agent"];
+Request.HttpMethod;
+Request.Params["Name"];
+
+//Response
+Response.Write("<h3>Hello world!</h3>");
+Respose.ContentType = "text/plain";
+Response.Headers.Add("Debug-Info", "v1.0");
+Response.Redirect("Welcome.aspx");
+```
+
+#### a note on testing
+- Request and Response both interact with HttpContext
+- all are static objects
+- it is very hard to stub/mock a static object
+- tips for unit testing with WebFormsL
+  - separate business logic from the page
+  - encapuslate interactions with Request and Response
+  - consider using an MVP(Model-View-Presenter) pattern (advanced)
+
+### Redirect vs Transfer
+`Response.Redirect("Other.aspx")`
+- causes HTTP Code 302 to be sent
+- browser then requests the page
+- all form values, etc from current page are lost
+
+`Server.Transfer("SomePage.aspx")`
+- direct transfer (no new request from browser)
+- form values can be preserved if required
+- URL in browser is unchanged
+
+### Sessions and Cookies
+Cookies
+- a text file stored on the **client's** computer by the web browser
+- the web site uses the cookie to store information about the user
+- sent with each request from the user to the web site
+- sent as a HTTP header
+
+```cs
+HttpCookie cookie = new HttpCookie("user", "Cindy");
+cookie.Expires = DateTime.Now.AddMinutes(10.0);
+Response.SetCookie(cookie);
+
+Request.Cookies["user"].Value;
+```
+
+Limitations:
+- can only store strings
+- can be disabled by the user
+- at least (at most) 300 cookies total
+- at least (at most) 4096 bytes per cookie
+- at least (at most) 20 cookies per domain
+
+HttpSessionState
+- available in every page via `Session`
+- stores objects by key (name-value pairs)
+- Users cookies behind-the-scenes `ASP.NET_SessionId=...;`
+- Fall-back to URL encoding
+
+ViewState
+- `ViewState` is similar to `Session`
+- implemeted as a hidden form variable (doesn't depend on cookies)
+- available on post back (not sessions)
+- is transferred with every requet and respose
+
+### Authentication/Authorization
+Authentication strategies
+- no authentication
+- individual user accounts
+for general public
+- organizational accounts
+use with Active Directory
+- windows authentication
+for small Local Area Network
+
+Authentication technologies
+- membership (old)
+- identity (new)
+- cookie authentication
+
+when first login, login credentials are checked and authentication information is added to browser cookie, so no need to sent credential with every request
+
+Authentication concepts
+- Users - individual
+- Roles - category
+- Claims - store user information
+- Authentication - who are u
+- Authorization - what r u allowed to do
+
+Getting the current user:
+used the `User` Proerty of `System.Web.UI.Page`
+```cs
+User.Identity.Name
+User.IsInRole("Admin")
+```
+
+Protecting files/directories:
+in web.config
+```xml
+<location path="Admin.aspx">
+  <system.web>
+    <authorization>
+      <allow roles="Admin"/> 
+      <deny users="*" />
+    </authorization>
+  </system.web>
+</location> 
+```
+
+- the asterisk (*) means "everyone"
+- the question mark(?) means "unauthenticated users"
+
+### Master pages
+- use master pages to achieve a common look and feel
+- master pages use placeholder tags for positioning nested content
+- content pages "inherid" common GUI elements from master pages
+- known as "visual inheritance"
+
+Master:
+```cs
+<%@Master Language="C#" %>
+
+<asp:ContentPlaceHolder ID="Main" runat="server"/>
+```
+
+Content Pages:
+```cs
+<%@Page Language="C#" MasterPageFile="Site.Master" %>
+
+<asp:Content ContentPlaceHolderID="Main" runat="server">
+  Welcome!
+</asp:Content>
+```
+
+### User controls
+web applications often reuse functionality on multiple pages:
+- user controls (ASCX) can achieve this
+- custom components can be embedded like ordinary components
+
+```cs
+<%@Control Language="C#" CodeBehind="MyControl.ascx.cs" Inherits="App.MyControl" %>
+
+<asp:TextBox ID="FirstName" runat="server"></asp:TextBox>
+<asp:TextBox ID="LastName" runat="server"></asp:TextBox>
+```
+Content Pages:
+```cs
+<%@Page Language="C#" %>
+
+<%@ Register Src="~/MyControl.ascx" TagPrefix="uc" TagName="MyControl" %> <uc:MyControl ID="UserDetails" runat="server"/>
+```
+### Application architectures
+1-tier
+![1-tier](img/lect-4-1-tier.png)
+Advantages
+- Extremely simple
+
+Diadvantages
+- difficulty in re-using code if presentation method needs to be changed
+- testing is more complex
+- difficult to share functionality
+- functionally unrelated code is contained in a single class
+- no shared data
+
+2-tier
+![2-tier](img/lect-4-2-tier.png)
+Advantages
+- Conceptually simple
+- Shared data
+
+Disadvantages
+- diffculty in re-using code if presentation method needs to be changed
+- testing is more complex
+- difficult to share functionality
+- functionally unrelated code is contained in a single class
+
+3-tier
+![3-tier](img/lect-4-3-tier.png)
+Advantages
+- easier testing
+- easier to modify user interface
+- more scalable
+- data access classes can be shared with other applications
+
+Disadvantages
+- More complex
+
+4-tier
+![4-tier](img/lect-4-4-tier.png)
+Advantages
+- best for testing
+- more scalable
+- interface classes are only responsible for displaying data (easy to change interface)
+- one place to change business logic
+- business and data access functions can be chared easily
+
+Disadvantages
+- more complex
+- less support from IDE tools
+
+## Lecture 5 Data Access
