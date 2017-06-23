@@ -62,6 +62,7 @@
         - [Views](#views)
         - [MVC vs WebForms](#mvc-vs-webforms)
     - [Lecture 10 ASP.NET MVC Advanced](#lecture-10-asp-net-mvc-advanced)
+        - [Grouping into Controllers](#grouping-into-controllers)
 
 
 ## Lecture 1 Linq, enterprise dev practice
@@ -1239,6 +1240,7 @@ MVC uses configurable mappings between URLs and actions, this means that the URL
 ### Routing rules
 default routing rule:
 > http://www.example.com/Product/List
+
 is parsed using: /{controller}/{action}
 > controller = `Product`, action = `List`
 
@@ -1246,14 +1248,17 @@ the routing rules normally appear in RouteConfig.cs
 
 Controller invocation:
 > controller = `Product`, action = `List`
+
 becomes
 > `new ProductController().List()`
 any other parameters configured in the URL are passed as parameters to the action method
 
 View Rendering:
 > `ViewResult List() { return View(); }`
+
 invokes the Razor view enginer on:
 > `Views/Product/List.cshtml`
+
 by convention, a view will be chosen by searching for a Razor file in the Views folder that corresponds to a controller and action, and by convention, the razor file will be a file with the same name as the action and a folder with the same name as the controller
 
 this default behaviour can be overrider by passing paramerest to `View()`
@@ -1335,3 +1340,4 @@ View Models:
   - Forms has Calendar, GridView, reporting and many other powerful controls that just drag and drop
 
 ## Lecture 10 ASP.NET MVC Advanced
+### Grouping into Controllers
