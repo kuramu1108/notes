@@ -39,7 +39,11 @@
                 - [Typed DataSets](#typed-datasets)
         - [Transactions](#transactions)
         - [DataReader vs DataSet](#datareader-vs-dataset)
-    - [Lecture 7](#lecture-7)
+    - [Lecture 7 Databases and Testing](#lecture-7-databases-and-testing)
+        - [Integration Testing](#integration-testing)
+        - [Mocking](#mocking)
+        - [Encapsulation Strategies](#encapsulation-strategies)
+    - [Lecture 8 Entity Framework](#lecture-8-entity-framework)
 
 
 ## Lecture 1 Linq, enterprise dev practice
@@ -886,4 +890,50 @@ using (var tx = conn.BeginTransaction())
   - this may be a problem if you want your design to be independent of the relational database
 - while DataReaders are more difficult to work with, their low level abstraction may encourage better separation and isolation
 
-## Lecture 7
+## Lecture 7 Databases and Testing
+Broadly, there are 2 approaches
+- Integration testing
+- Mocking data access classes
+
+### Integration Testing
+- test that the method really does add data to the database
+- perform testing on the database and checked whether data is modified as intended
+- some strategies for controlled integration testing:
+  1. set the database into a known state before the tests and ensure that at the end of a test, the result is reversed; this can be achieved in code or using a **transaction**
+  2. set the database into a known state before every test
+  3. use an in-memory database or copy a database file before every test
+
+### Mocking
+- use a mocking framework to construct 'fake' data access objects
+- generate fake data/records
+- require that methods be called with certain parameters
+
+```cs
+[TestMethod]
+public void PackageReceived_BarcodeExists_LocationUpdates()
+{ 
+  Mock<PackageTableAdapter> adapter = new Mock<PackageTableAdapter>();
+  adapter.Setup(x => x.UpdateLocation("Brisbane", "123")).Returns(1);
+  
+  Location manager = new Location("Brisbane", adapter.Object);
+  Assert.IsTrue(manager.PackageReceived("123"));
+ 
+  adapter.Verify(x => x.UpdateLocation("Brisbane", "123"));
+}
+```
+couple extra points:
+
+> mocking test on data access objects could be less useful when not using DataSets or Typed DataSets
+> it would be testing the implementation rather than the behaviour of the application, and any change to the implementation requires a change to the tests
+> thus, an integration test is likely to be best with when testing data access layer implemented using the ADO.NET connected layer
+> However, once it's tested, can then use mock objects for unit testing in business logic layer
+
+### Encapsulation Strategies
+Follow a design pattern to isolate persistence concerns from business logic
+- Data Access Objects (DAO)
+- Repository Pattern
+- Unit Of Work Pattern
+
+a DAO support CRUD operations at a low level of abstraction
+
+## Lecture 8 Entity Framework
