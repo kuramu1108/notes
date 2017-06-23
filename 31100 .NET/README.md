@@ -44,6 +44,15 @@
         - [Mocking](#mocking)
         - [Encapsulation Strategies](#encapsulation-strategies)
     - [Lecture 8 Entity Framework](#lecture-8-entity-framework)
+        - [Object-Relational Mismatch](#object-relational-mismatch)
+        - [Object-relational mapping](#object-relational-mapping)
+        - [DbContext](#dbcontext)
+        - [CRUD](#crud)
+        - [Creating a DbContext](#creating-a-dbcontext)
+        - [Navigation Properties](#navigation-properties)
+            - [Loading](#loading)
+        - [Concurrency](#concurrency)
+        - [Code First database migrations:](#code-first-database-migrations)
 
 
 ## Lecture 1 Linq, enterprise dev practice
@@ -63,6 +72,8 @@ Westdale.PlanManager.WebFrontEnd
 Advantages of LINQ:
 - Behind the scenes conversion to SQL
 - Works with non-SQL data sources as well
+
+> LINQ queries are always executed **when the query variable is iterated over**, not when the query variable is created. This is called deferred execution.
 
 Prerequisites for LINQ:
 - Lambda expressions
@@ -937,3 +948,234 @@ Follow a design pattern to isolate persistence concerns from business logic
 a DAO support CRUD operations at a low level of abstraction
 
 ## Lecture 8 Entity Framework
+### Object-Relational Mismatch
+Challenges:
+- “When data has a **relational** structure, data access, storage, and scalability are very efficient, but writing efficient and maintainable code becomes more difficult.”
+- “When data has an **object** structure, the trade-offs are reversed: writing efficient and maintainable code comes at the cost of efficient data access, storage, and scalability.”
+
+Objects have
+- independent identity
+- references instead of foreign keys
+- private state
+- methods
+
+Relations have
+- value-semantics
+- uniqueness/identity tracked via the primary key
+- designated primary keys
+- foreign keys
+- durability (and other ACID properties)
+
+### Object-relational mapping
+- database records are automatically mapped to objects
+- these objects referred to as "entities"
+- usually a 1:1 mapping from record to entity
+- capture the database conceptual model
+- the mapping is not perfect
+
+### DbContext
+- DbContext
+  - simplified wrapper for ObjectContext
+- ObjectContext
+  - Manages connection to the DB
+  - Exposes entity sets for data querying
+  - Tracks changes to entities
+  - commits those changes to the DB
+- DbSet
+  - a collection of entities in a context
+  - add/remove from the set are translated to database insert/delete
+
+```cs
+// Instantiate a context
+using (CallEntities context = new CallEntitites())
+{
+  // Query a DbSet
+  var femaleCustomers = 
+      from customer in context.Customers
+      where customer.Gender == (int) Gender.Female
+      select customer.FirstName;
+  // Iterate through the results
+  foreach (var name in femaleCustomers) {
+    Console.WriteLine(name);
+  }
+}
+```
+
+### CRUD
+Create:
+- create a new instance of the entity
+- add the entity to the `DbSet`
+- call `DbContext.SaveChanges()`
+```cs
+// Create the customer
+var customer = new Customer
+{ 
+  FirstName = "Kevin",
+  LastName = "Brady",
+  Gender = (int)Gender.Male,
+  DateOfBirth = new DateTime(1981, 1, 15)
+};
+// Add to the DbSet
+context.Customers.Add(customer);
+// Save the changes to the database
+context.SaveChanges();
+```
+
+Read:
+- use LINQ on the `DbContext/DbSet`
+```cs
+var femleCustomers = from customer in context.Customers
+                      where customer.Gender == (int) Gender.Female
+                      select customer.FirstName;
+```
+- use LINQ query builder methods
+```cs
+var femaleCustomers = context.Customers
+                      .Where(c => c.Gender == (int)Gender.Female)
+                      .Select(c => c.FirstName);
+```
+- use Entity SQL (rarely used and discouraged)
+```cs
+IObjectContextAdapter oc = context;
+var users = new ObjectQuery<Customer>(
+        @"select value p
+          from Customers as p
+          where p.Gender == 0", oc.ObjectContext
+);
+```
+
+Update:
+- fund the entity in the `DbSet`
+- Modify th entity
+- call `DbContext.SaveChanges()`
+```cs
+var carol = (from customer in context.Customers
+              where customer.FirstName == "Carol"
+              && customer.LastName == "Martin"
+              select customer).First();
+// Modify the entity
+carol.LastName = "Brady";
+// Save changes
+context.SaveChanges();
+```
+
+Delete:
+- remove the entity from the `DbSet`
+- call `DbContext.SaveChanges()`
+```cs
+// Find the customer
+var kevin = (from customer in context.Customers
+              where customer.FirstName == "Kevin"
+              && customer.LastName == "Brady"
+              select customer).First();
+// Remove from the DbSet 
+context.Customers.Remove(kevin); // use RemoveRange for a list of entity
+// Save the changes to the database
+context.SaveChanges();
+```
+
+### Creating a DbContext
+2 approaches:
+- Database/Model first
+> Database first = Use an existing datavase and let visual studio generate the database model
+> Model first = Create a new database or a conceptual design and visual studio will generate the database schena
+- Code first
+> Code first = Write OO code and let Entity Framework generate a database schema
+> database will be automatically generated when first persist changes in application
+
+```cs
+// Code-first demo
+public class Customer
+{
+  // Primary key and identity
+  [Key] 
+  [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)] 
+  public int CustomerId { get; set; }
+
+  // Not null, database column and type specified 
+  [Required]
+  [Column("FirstName", TypeName="nvarchar(100)")] 
+  public string FirstName { get; set; }
+
+  [Required]
+  public string LastName { get; set; }
+
+  // Navigation property (many-to-one) 
+  // notice the virtual
+  public virtual Address Address { get; set; }
+
+  // Navigation property (one-to-many) 
+  [InverseProperty("CustomerCalled")]
+  public virtual ICollection<Message> Calls { get; set; }
+
+  // not stored in the database
+  [NotMapped]
+  public string FullName
+  {
+    get {return Firstname + " " + LastName;}
+  }
+}
+
+// the context is easy to implement:
+public class CustomerEntities: DbContext
+{
+  public Model(): base("CustomerCalls")
+  {
+  }
+
+  // notice the virtual
+  public virtual DbSet<Customer> Customers {get; set;}
+}
+```
+
+### Navigation Properties
+- Relations/foreign keys are converted to properties in .NET
+- add/delete from the navigation property to modify the database
+
+```cs
+// Find the customer
+var carol = (from customer in context.Customers
+              where customer.FirstName == "Carol"
+              && customer.LastName == "Brady"
+              select customer).First();
+// View the calls
+foreach (var call in carol.Calls) {
+  Console.WriteLine(call);
+}
+// Add a new call
+var newCall = new Call {
+  StartTime = new DateTime(),
+  Notes = "Customer was not interested"
+};
+carol.Calls.Add(newCall);
+// Save the changes to the database
+context.SaveChanges();
+```
+
+#### Loading
+- Lazy Loading (default)
+  - entity framework queries the database when you use a navigation property of an entity
+- Eager Loading (.Include)
+  - entity framework queries the database for the navigation property when you **retrieve the entity**
+- No Loading
+  - entity framework ignores navigation properties
+
+for lazy loading to work, the properties need to be virtual, this is because entity framework generates a subclass of entity class and will have a method that queries the underlying database
+
+### Concurrency
+- optimistic
+  - conflicts rarely happen
+  - deal with them
+  - approach taken by EF
+- pessimistic
+  - conflicts should never happen
+  - lock the database
+
+```js
+add something later
+```
+
+### Code First database migrations:
+- the database is created from code
+- changes in code don't update the schema
+- use migrations to 'evolve' database with code
