@@ -53,6 +53,15 @@
             - [Loading](#loading)
         - [Concurrency](#concurrency)
         - [Code First database migrations:](#code-first-database-migrations)
+    - [Lecture 9 ASP.NET MVC](#lecture-9-asp-net-mvc)
+        - [MVC](#mvc)
+        - [Filesystem vs HTTP](#filesystem-vs-http)
+        - [Stages](#stages)
+        - [Routing rules](#routing-rules)
+        - [Form Fields](#form-fields)
+        - [Views](#views)
+        - [MVC vs WebForms](#mvc-vs-webforms)
+    - [Lecture 10 ASP.NET MVC Advanced](#lecture-10-asp-net-mvc-advanced)
 
 
 ## Lecture 1 Linq, enterprise dev practice
@@ -1179,3 +1188,150 @@ add something later
 - the database is created from code
 - changes in code don't update the schema
 - use migrations to 'evolve' database with code
+
+## Lecture 9 ASP.NET MVC
+### MVC
+Problem with ASP.NET Forms:
+- compiled ASPX file combiles both the view handling code as well as view logic
+- they aren't separated
+- difficult to write unit tests
+- difficult to reuse logic across multiple views
+
+ASP.NET MVC:
+
+![mvc](img/lec-9-mvc.png)
+
+- controller is responsible for creating or modifying the model
+- model is then passed to the view
+- view then renders HTML for the user
+
+Rationale:
+- view management is less abstract than ASP.NET Forms
+- "Closer" to HTML
+- Request routing based on HTTP rather than file system
+- Control over content types (HTML, XML, JSON)
+- Supports AJAX and rich UIs
+- Easier to test and maintain
+- Cleaner markup
+- Industry trend
+
+### Filesystem vs HTTP
+```
+// WebForms
+GET /ProductInfo.aspx?id=332
+// MVC
+GET /Products/332
+```
+
+in terms of MVC being cloase to the underlying HTTP protocol, consider how requests are handled:
+
+in forms, a URL is a request for a specific view/form, the URL reveals the underlying file structure of the application
+
+MVC uses configurable mappings between URLs and actions, this means that the URL can represent the logical structure of your domain
+
+### Stages
+- Page request
+- Routing - path is decomposed: controller and action are identified
+- Controller invocation - the controller action is invoked: ViewResult returned
+- View Rendering - the appropriate view is rendered by view engine
+- Response returned
+
+### Routing rules
+default routing rule:
+> http://www.example.com/Product/List
+is parsed using: /{controller}/{action}
+> controller = `Product`, action = `List`
+
+the routing rules normally appear in RouteConfig.cs
+
+Controller invocation:
+> controller = `Product`, action = `List`
+becomes
+> `new ProductController().List()`
+any other parameters configured in the URL are passed as parameters to the action method
+
+View Rendering:
+> `ViewResult List() { return View(); }`
+invokes the Razor view enginer on:
+> `Views/Product/List.cshtml`
+by convention, a view will be chosen by searching for a Razor file in the Views folder that corresponds to a controller and action, and by convention, the razor file will be a file with the same name as the action and a folder with the same name as the controller
+
+this default behaviour can be overrider by passing paramerest to `View()`
+
+> e.g. `View("Secondary")` will use the view in `Views/Product/Secondary.cshtml`
+
+the model is passed as a parameter to view
+```cs
+View(model);
+View("Secondary", model);
+```
+
+Routing:
+- Convention over Configuration
+- Parameters
+  - Query strings are passed as parameters to controller methods
+  - `/Product/Search?name=Table` maps to `ProductController.Search("Table)`
+  - `/Product/View/6` maps to `ProductController.View(6)`
+
+Controller actions:
+- can return any type or void
+- Convention is to return `ActionResult` or one of its descendants:
+  - `FileResult` - returns a fule or binary data for download
+  - `ViewResult` - uses Razor to render a view using the supplied model
+  - `JSONResult` - return JSON (e.g. for AJAX callbacks)
+  - `ContentResult` - plain text
+  - `RedirectToRouteResult` - navigates to another part of the app (HTTP 302 redirect), can also yse RedirectToAction to create a RedirectToRouteResult
+  - `HttpUnauthorizedResult` - return a HTTP 403 denied
+
+### Form Fields
+POST and GET parameters are available via:
+- `Request.QueryString["name"]`
+- `Request.Form["name"]`
+- Named arguments: `Action(string name)`
+- Model Bindings: `Action(Person person)`
+
+better let MVC do automatic binding instead of manually retrieving
+
+### Views
+- provide the UI
+- are supplied with a model by the controller
+- take data from the model to embed in the HTML
+- are located in the Views folder (by convention)
+- each controller has a corresponding filder in the Views filder containing views for each controller method
+- can be written in Razor (cshtml) or ASP (aspx)
+
+Passing parameters to a view:
+- using `ViewBag`:
+  - Set in C#
+  - `ViewBag.Name = "Carol"`
+- Read from Razor (cshtml):
+  - `@ViewBag.Name`
+
+can set any properties to ViewBag, whenever it's set, it is created on the object; howeverm there are no compile time checks to ensure correct name or type is used, thus it isn't a good practice to use in production
+
+Passing a model to a view:
+- Set in C#
+  - `return View(new Person { Name = "Derek"}; )`
+- Read from Razor (cshtml)
+  - `@model MVCApplication.Person`
+  - `<p>Your name is @Model.Name</p`
+
+View Models:
+- used when information required does not map to a single model class
+- create a specific model to contain information -> a "ViewModel"
+
+### MVC vs WebForms
+- will it be a public website or an intranet site?
+  - MVC lets you have more control over the HTML so might be preferred for a public website
+- how much time do you have?
+  - Forms can be a lot faster to develop for simple sites
+- Do u need to create custom URLs?
+  - MVC makes this easier
+- Do u have existing GUI code?
+  - Forms is closer to traditional GUI development
+- Do u need to use lots of custom JavaScript/AJAX?
+  - MVC will make this easier
+- Do u need to use rich server-side controls?
+  - Forms has Calendar, GridView, reporting and many other powerful controls that just drag and drop
+
+## Lecture 10 ASP.NET MVC Advanced
