@@ -27,7 +27,19 @@
         - [Master pages](#master-pages)
         - [User controls](#user-controls)
         - [Application architectures](#application-architectures)
+            - [1-tier](#1-tier)
+            - [2-tier](#2-tier)
+            - [3-tier](#3-tier)
+            - [4-tier](#4-tier)
     - [Lecture 5 Data Access](#lecture-5-data-access)
+        - [ADO.NET](#ado-net)
+        - [ADO.NET Layers](#ado-net-layers)
+            - [Connected Layer](#connected-layer)
+            - [Disconnected layer](#disconnected-layer)
+                - [Typed DataSets](#typed-datasets)
+        - [Transactions](#transactions)
+        - [DataReader vs DataSet](#datareader-vs-dataset)
+    - [Lecture 7](#lecture-7)
 
 
 ## Lecture 1 Linq, enterprise dev practice
@@ -619,9 +631,10 @@ Content Pages:
 <uc:MyControl ID="UserDetails" runat="server"/>
 ```
 ### Application architectures
-1-tier
+####1-tier
 
 ![1-tier](img/lec-4-1-tier.png)
+
 Advantages
 - Extremely simple
 
@@ -632,9 +645,10 @@ Diadvantages
 - functionally unrelated code is contained in a single class
 - no shared data
 
-2-tier
+####2-tier
 
 ![2-tier](img/lec-4-2-tier.png)
+
 Advantages
 - Conceptually simple
 - Shared data
@@ -645,9 +659,10 @@ Disadvantages
 - difficult to share functionality
 - functionally unrelated code is contained in a single class
 
-3-tier
+####3-tier
 
 ![3-tier](img/lec-4-3-tier.png)
+
 Advantages
 - easier testing
 - easier to modify user interface
@@ -657,9 +672,10 @@ Advantages
 Disadvantages
 - More complex
 
-4-tier
+####4-tier
 
 ![4-tier](img/lec-4-4-tier.png)
+
 Advantages
 - best for testing
 - more scalable
@@ -672,3 +688,202 @@ Disadvantages
 - less support from IDE tools
 
 ## Lecture 5 Data Access
+### ADO.NET
+- a set of base classes/interfaces and optimized implementations of those interfaces
+- e.g. to access an SQL server database, you would use the ADO.NET data provider that is optimized for SQL server
+
+```cs
+var settings = System.Configuration.ConfigurationManager.ConnectionStrings["Db"]; 
+DbProviderFactory factory = DbProviderFactories.GetFactory(settings.ProviderName); 
+DbConnection conn = factory.CreateConnection(); 
+conn.ConnectionString = settings.ConnectionString;
+conn.Open();
+```
+
+### ADO.NET Layers
+- connected
+  - the connected layer maintains a datavse connection while working with the datavse
+  - the traditional approach to interfacing with database
+  - closely matches the low-level interfaces that most database provide
+- disconnected
+  - the disconnected layer creates an in-memory copy of part of the datavase
+  - designed to conserve connections, increase performance and also reduec programmer errors in managing conections
+- object-relational (EntityFramework)
+  - in-memory view of the database
+  - however, it is not relational - it does not have tables and columns
+  - instead it automatically translates tables into ordinary objects
+
+#### Connected Layer
+- DbConnection (SqlConnection)
+- DbCommand (SqlCommand)
+- DbataReader (SqlDataReader)
+
+Querying the database
+- create a connection
+- open the connection
+- create a command
+- execute the command
+- read the result
+- close the connection
+
+Create a connection:
+- select a data provider (e.g. `System.Data.SqlClient`)
+- create a connection instance
+- pass a connection string to configure the connection
+
+Connection strings:
+-  are preferably stored in .config files
+
+```xml
+<connectionStrings>
+<add name="Db"
+  connectionString="Data Source=(LocalDB)\v11.0;Integrated Security"
+  providerName="System.Data.SqlClient"/>
+</connectionStrings>
+```
+```cs
+using System.Configuration; 
+ConfigurationManager.ConnectionStrings["Db"].ProviderName 
+ConfigurationManager.ConnectionStrings["Db"].ConnectionString
+```
+
+Commands:
+```cs
+SqlConnection c = new SqlConnection();
+c.ConnectionString = connectionString;
+c.Open();
+string query = "select count(*) from Customers";
+SqlCommand command = new SqlCommand(query);
+command.Connection = c;
+Response.Write(command.ExecuteScalar().ToString()); 
+c.Close();
+```
+
+Using `using`:
+```cs
+using (SqlConnection c = new SqlConnection())
+{
+  c.Open();
+  ....
+  // c.Close(); no need
+}
+```
+
+- the `using` statement automatically ensures that connections are closed
+- it could be used with any class that implements `IDisposable`
+
+Command:
+
+four methods to execute commands:
+- `ExecuteScalar` - when the query will return single value
+- `ExecuteReader` - Select statements, returns a  `DbDataReader`
+- `ExecuteNonQuery` - insert, delete, update statements, not results
+- `ExecuteXMLreader` - for handling XML from SQL server
+
+DataReader:
+- read only, forward only data stream
+- useful when you only need to access data once
+- retains a database connection
+
+```cs
+using (SqlDataReader result = command.ExecuteReader())
+{
+  while (result.Read()) 
+  {
+    Console.WrilteLine(result.GetString(0));
+    Console.WrilteLine(result.GetInt32(1));
+  }
+}
+```
+
+Parameters:
+```cs
+string query = @"select FirstName, LastName
+                  from SystemUser
+                  where LastName = @name";
+Sqlcommand command = new SqlCommand(query, conn)
+command.Parameters.Add(new SqlParameter("name", "Robert"));
+```
+
+#### Disconnected layer
+why?
+- memory is cheap and fast
+- database connections are sloq and resource consuming
+- simple and clean
+- ensures that connections are closed quickly
+- allow results to be cached easier
+- reduce the possibility that connections are not closed
+
+Disconnected Layer:
+- `DataSet` - an "in-memory" database
+- `DataTable` - a table in the `DataSet`
+- `DataRow` - a row of a `DataTable`
+- `DataAdapter` - connects a `DataSet` to a database
+
+Querying with DataSets:
+- create `DataAdapter` with SQL string and connection
+- create a new `DataSet`
+- fill dataset using `DbDataAdapter.Fill(dataset`
+- process or display DataSet 'offline'
+
+![dataset](img/lec-5-dataset.png)
+
+```cs
+DataSet result = new DataSet();
+string query = "select FirstName, LastName, DateOfBirth from SystemUser"; 
+SqlDataAdapter adapter = new SqlDataAdapter(query, connectionString); 
+adapter.Fill(result);
+// First table, first row, first column
+Console.WriteLine(result.Tables[0].Rows[0][0]);
+```
+
+Updating with DataSets:
+- make changes to `DataSet`  
+- update database using `DbDataAdapter.Update(dataset)`
+- Note:
+  - you need to specify the update queries (`DbDataAdapter.UpdateCommand`)
+  - However, `SqlCommandBuilder` can do this automatically
+
+##### Typed DataSets
+- simply a custom subclass of `DataSet`/`DataTable`
+
+```cs
+SystemUserTable users = new SystemUserTableAdapter().GetData();
+```
+
+### Transactions
+Group database updates into a single unit
+- 'All or nothing'
+- isolation
+- e.g. Bank account transger
+- user `DbTransaction (SqlTransaction)`
+
+```cs
+// BeginTransaction returns an instance of DbTransaction
+var tx = connection.BeginTransaction();
+tx.Commit();
+tx.RollBack();
+tx.Close();
+
+// actual usage
+using (var tx = conn.BeginTransaction())
+{
+  var c1 = new SqlCommand(update1, conn, tx);
+  c1.ExecuteNonQuery();
+
+  var c2 = new SqlCommand(update2, conn, tx);
+  c2.ExecuteNonQuery();
+
+  tx.Commit();
+}
+// the code will be run 'all or nothing'
+// if either command fails, then both will be cancelled
+```
+
+### DataReader vs DataSet
+- DataSets are very easy to use and reduce errors
+  - however it create a tendency to use them pervasively throughout an application
+  - this may be a problem if you want your design to be independent of the relational database
+- while DataReaders are more difficult to work with, their low level abstraction may encourage better separation and isolation
+
+## Lecture 7
