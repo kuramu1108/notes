@@ -7,16 +7,16 @@
         - [test approaches](#test-approaches)
         - [Test Driven Development (TDD)](#test-driven-development-tdd)
         - [Dealing with dependencies](#dealing-with-dependencies)
-    - [Lecture 3 ASP.NET](#lecture-3-asp-net)
-        - [ASP.NET](#asp-net)
+    - [Lecture 3 ASP NET](#lecture-3-asp-net)
+        - [ASP NET](#asp-net)
         - [Web Server](#web-server)
         - [ASP](#asp)
-        - [ASP.NET WebForms:](#asp-net-webforms)
+        - [ASP NET WebForms:](#asp-net-webforms)
         - [Web.config](#web-config)
         - [Events](#events)
         - [State](#state)
         - [Redirect](#redirect)
-    - [Lecture 4 More ASP.NET WebForms and Architecture](#lecture-4-more-asp-net-webforms-and-architecture)
+    - [Lecture 4 More ASP NET WebForms and Architecture](#lecture-4-more-asp-net-webforms-and-architecture)
         - [Page life-cycle](#page-life-cycle)
         - [Life-cycle events](#life-cycle-events)
         - [Request and Response](#request-and-response)
@@ -32,8 +32,8 @@
             - [3-tier](#3-tier)
             - [4-tier](#4-tier)
     - [Lecture 5 Data Access](#lecture-5-data-access)
-        - [ADO.NET](#ado-net)
-        - [ADO.NET Layers](#ado-net-layers)
+        - [ADO NET](#ado-net)
+        - [ADO NET Layers](#ado-net-layers)
             - [Connected Layer](#connected-layer)
             - [Disconnected layer](#disconnected-layer)
                 - [Typed DataSets](#typed-datasets)
@@ -53,7 +53,7 @@
             - [Loading](#loading)
         - [Concurrency](#concurrency)
         - [Code First database migrations:](#code-first-database-migrations)
-    - [Lecture 9 ASP.NET MVC](#lecture-9-asp-net-mvc)
+    - [Lecture 9 ASP NET MVC](#lecture-9-asp-net-mvc)
         - [MVC](#mvc)
         - [Filesystem vs HTTP](#filesystem-vs-http)
         - [Stages](#stages)
@@ -61,11 +61,12 @@
         - [Form Fields](#form-fields)
         - [Views](#views)
         - [MVC vs WebForms](#mvc-vs-webforms)
-    - [Lecture 10 ASP.NET MVC Advanced](#lecture-10-asp-net-mvc-advanced)
+    - [Lecture 10 ASP NET MVC Advanced](#lecture-10-asp-net-mvc-advanced)
         - [Grouping into Controllers](#grouping-into-controllers)
 
 
 ## Lecture 1 Linq, enterprise dev practice
+
 ### Namespace naming conventions
 ```cs
 CompanyName.TechnologyName[.Feature][.Subnamespace]
@@ -212,7 +213,10 @@ var result = numbers.Where(x => x > 5).Select(x => x * x);
 
 - the results are available as an IEnumerable<T> collection
 
+
+[back to top](#net-review)
 ## Lecture 2 Testing and Refactoring
+
 ### test approaches
 black box testing
 - when we test the inputs and outputs, but do not look inside
@@ -289,8 +293,10 @@ one appraoch
 - test code 'injects' fake class
 - tests run using the fake class
 
-## Lecture 3 ASP.NET
-### ASP.NET
+[back to top](#net-review)
+## Lecture 3 ASP NET
+
+### ASP NET
 Active Server Pages (ASP).NET
 Three Models
 - WebForms
@@ -334,7 +340,7 @@ Classic ASP (inline) style:
 </html>
 ```
 
-### ASP.NET WebForms:
+### ASP NET WebForms:
 ASPX:
 ```html
 <%@ Page Language="C#"
@@ -440,7 +446,9 @@ Server.Transfer("Other.aspx");
 `Response.Redirect` is more preferred as `Server.Transfer` does the redirect on the server so may result in misleading URLs
 e.g. A request to PageA.aspx, if transferred to PageB.aspx will retain the URL of PageA.aspx.
 
-## Lecture 4 More ASP.NET WebForms and Architecture
+[back to top](#net-review)
+## Lecture 4 More ASP NET WebForms and Architecture
+
 ### Page life-cycle
 High Level understanding:
 - requested received
@@ -712,8 +720,9 @@ Disadvantages
 - more complex
 - less support from IDE tools
 
+[back to top](#net-review)
 ## Lecture 5 Data Access
-### ADO.NET
+### ADO NET
 - a set of base classes/interfaces and optimized implementations of those interfaces
 - e.g. to access an SQL server database, you would use the ADO.NET data provider that is optimized for SQL server
 
@@ -725,7 +734,7 @@ conn.ConnectionString = settings.ConnectionString;
 conn.Open();
 ```
 
-### ADO.NET Layers
+### ADO NET Layers
 - connected
   - the connected layer maintains a datavse connection while working with the datavse
   - the traditional approach to interfacing with database
@@ -911,6 +920,7 @@ using (var tx = conn.BeginTransaction())
   - this may be a problem if you want your design to be independent of the relational database
 - while DataReaders are more difficult to work with, their low level abstraction may encourage better separation and isolation
 
+[back to top](#net-review)
 ## Lecture 7 Databases and Testing
 Broadly, there are 2 approaches
 - Integration testing
@@ -957,6 +967,7 @@ Follow a design pattern to isolate persistence concerns from business logic
 
 a DAO support CRUD operations at a low level of abstraction
 
+[back to top](#net-review)
 ## Lecture 8 Entity Framework
 ### Object-Relational Mismatch
 Challenges:
@@ -1190,7 +1201,8 @@ add something later
 - changes in code don't update the schema
 - use migrations to 'evolve' database with code
 
-## Lecture 9 ASP.NET MVC
+[back to top](#net-review)
+## Lecture 9 ASP NET MVC
 ### MVC
 Problem with ASP.NET Forms:
 - compiled ASPX file combiles both the view handling code as well as view logic
@@ -1339,5 +1351,6 @@ View Models:
 - Do u need to use rich server-side controls?
   - Forms has Calendar, GridView, reporting and many other powerful controls that just drag and drop
 
-## Lecture 10 ASP.NET MVC Advanced
+[back to top](#net-review)
+## Lecture 10 ASP NET MVC Advanced
 ### Grouping into Controllers
