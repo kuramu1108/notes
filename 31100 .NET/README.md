@@ -1,4 +1,18 @@
 # .NET Review
+- [.NET Review](#net-review)
+    - [Lecture 1 Linq, enterprise dev practice](#lecture-1-linq-enterprise-dev-practice)
+        - [Namespace naming conventions](#namespace-naming-conventions)
+        - [LINQ Language INtegrated Query](#linq-language-integrated-query)
+    - [Lecture 2 Testing and Refactoring](#lecture-2-testing-and-refactoring)
+        - [test approaches](#test-approaches)
+        - [Test Driven Development (TDD)](#test-driven-development-tdd)
+        - [Dealing with dependencies](#dealing-with-dependencies)
+    - [Lecture 3 ASP.NET](#lecture-3-asp-net)
+        - [ASP.NET](#asp-net)
+        - [Web Server](#web-server)
+        - [ASP](#asp)
+
+
 ## Lecture 1 Linq, enterprise dev practice
 ### Namespace naming conventions
 ```cs
@@ -175,7 +189,7 @@ public class UsersTests
     Assert.IsTrue(user.FullName().StartsWith("Mr"), "error msg");
   }
 }
-
+```
 
 Test naming convention
 - tests for MyProject -> MyProjectTests
@@ -214,3 +228,54 @@ your code will often have dependencies on other classes
 - file system classes
 - database access classes
 - web service classes
+
+one appraoch
+- class under test uses interface to dependency
+- write a dummy interface implementation for testing only
+- test code 'injects' fake class
+- tests run using the fake class
+
+## Lecture 3 ASP.NET
+### ASP.NET
+Active Server Pages (ASP).NET
+Three Models
+- WebForms
+  - GUI oriented, using 'forms' and 'controls'
+  - a stateful application abstraction over web development
+- MVC (Model View Controller)
+  - doesn't hide the stateless nature of the web
+- Web API
+  - supports REST/HTTP APIs
+  - very similar approach to MVS
+
+### Web Server
+browser <-> server
+- HTTP protocol
+- TCP port 80 or 443 for HTTPS
+
+Serving static content:
+
+**browser <-> server <-> HTML files**
+
+ASP.NET:
+
+![asp.net](img/lec-2-asp.net.png)
+
+### ASP
+Classic ASP (inline) style:
+```jsp
+<%@ Page Language="C#" %>
+<!DOCTYPE html>
+<html>
+  <body>
+    <%
+      if (Test())
+      {
+    %>
+      Hello, <%= Expression() %>
+    <%
+      }
+    %>
+  </body>
+</html>
+```
