@@ -23,7 +23,7 @@
             - [a note on testing](#a-note-on-testing)
         - [Redirect vs Transfer](#redirect-vs-transfer)
         - [Sessions and Cookies](#sessions-and-cookies)
-        - [Authentication/Authorization](#authentication-authorization)
+        - [Authentication and Authorization](#authentication-and-authorization)
         - [Master pages](#master-pages)
         - [User controls](#user-controls)
         - [Application architectures](#application-architectures)
@@ -581,7 +581,7 @@ ViewState
 - available on post back (not sessions)
 - is transferred with every requet and respose
 
-### Authentication/Authorization
+### Authentication and Authorization
 Authentication strategies
 - no authentication
 - individual user accounts
@@ -1442,3 +1442,4 @@ public class MainController : Controller
 }
 ```
 once attribute-based routing is enabled, could define custome routes on the controller
+[back to top](#net-review)
