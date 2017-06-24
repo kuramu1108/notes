@@ -62,7 +62,11 @@
         - [Views](#views)
         - [MVC vs WebForms](#mvc-vs-webforms)
     - [Lecture 10 ASP NET MVC Advanced](#lecture-10-asp-net-mvc-advanced)
-        - [Grouping into Controllers](#grouping-into-controllers)
+        - [Model validation](#model-validation)
+        - [Layout Master](#layout-master)
+        - [Partial views](#partial-views)
+        - [Authentication annotations](#authentication-annotations)
+        - [Attribute routing](#attribute-routing)
 
 
 ## Lecture 1 Linq, enterprise dev practice
@@ -99,7 +103,7 @@ Delegates (Named method):
 public delegate string Formatter(int value)
 public static string SthFormat(int value)
 public static void foo(Formatter format){
-format(1);
+  format(1);
 }
 foo(SthFormat);
 ```
@@ -1353,4 +1357,87 @@ View Models:
 
 [back to top](#net-review)
 ## Lecture 10 ASP NET MVC Advanced
-### Grouping into Controllers
+### Model validation
+- automatic
+- based on annotations (attributes) on model
+- Check `ModelState.IsValid` in controller
+- use the HTML helper in razor to shor error messages:
+  - `@Html.ValidationSummary()`
+  - `@Html.ValidationMessageFor(...)`
+- Validation Annotations:
+  - `[Required]`
+  - `[RegularExpression]`
+  - `[Range]`
+  - `[MaxLength]`
+  - `[MinLength]`
+  - `[Compare]`
+  - `[EmailAddress]`
+  - `[Phone]`
+  - `[StringLength]`
+  - ...
+- Placed on properties
+
+### Layout Master
+```html
+<html>
+<body>
+  <h1>Here is the body:</h1>
+  @RenderBody()
+  <h2>Here is a section:</h2>
+  @RenderSection("Section", false)
+</body>
+</html>
+```
+Similar to ASP.NET Form Master Pages and User Controls
+-> MVC Layouts and Partial View
+
+Using layouts:
+```html
+@{
+    Layout = "~/Views/_Base.cshtml";
+}
+<div class="content">This is the body</div>
+@section Section {
+    <p>This is a section named "Section"</p>
+}
+```
+- used by setting the `Layout` property of the Razor view
+- any part of the view defined in a `@section` becomes a section
+- any text not defined in side a `@section` is the body
+
+### Partial views
+- include another view inline
+  - `@Html.Partial("View", model)`
+  - `@{ Html.RenderPartial("View", model); }`
+- include another action inline
+  - `@Html.Action("Action")`
+  - `@{ Html.RenderAction("Action"); }`
+
+a partial view is just a Razor view defined in another file
+
+the difference between `Html.Partial` and `Html.RenderPartial` is that the former returns a string (MvcHtmlString) and added to the output, while the latter renders the result directly to the output - does not create a temp string; since `RenderPartial` does not create the string, it should be slightly faster, but `Html.Partial` is more natural to use when writing Razor
+
+### Authentication annotations
+- `[Authorize]` (must be logged in)
+- `[AllowAnonymous]` (does not need to be logged in)
+- `[Authorize(Roles = ...)]` (allow particular roles)
+- `[Authorize(Users = ...)]` (allow particular users)
+
+applied to either the controller or individual actions
+
+### Attribute routing
+in `RouteConfig.cs`
+- call `routes.MapMVCAttributeRoutes();`
+
+```cs
+[RoutePrefix("Books")]
+public class MainController : Controller
+{
+  [Route("View/{id:int}")]
+  public ActionResult ViewBook(int id)
+  {
+    return View();
+  } 
+}
+```
+once attribute-based routing is enabled, could define custome routes on the controller
