@@ -1071,7 +1071,7 @@ var users = new ObjectQuery<Customer>(
 ```
 
 Update:
-- fund the entity in the `DbSet`
+- find the entity in the `DbSet`
 - Modify th entity
 - call `DbContext.SaveChanges()`
 ```cs
@@ -1181,7 +1181,7 @@ context.SaveChanges();
 #### Loading
 - Lazy Loading (default)
   - entity framework queries the database when you use a navigation property of an entity
-- Eager Loading (.Include)
+- Eager Loading (`.Include()`)
   - entity framework queries the database for the navigation property when you **retrieve the entity**
 - No Loading
   - entity framework ignores navigation properties
