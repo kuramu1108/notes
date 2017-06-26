@@ -741,11 +741,11 @@ conn.Open();
 
 ### ADO NET Layers
 - connected
-  - the connected layer maintains a datavse connection while working with the datavse
+  - the connected layer maintains a database connection while working with the database
   - the traditional approach to interfacing with database
   - closely matches the low-level interfaces that most database provide
 - disconnected
-  - the disconnected layer creates an in-memory copy of part of the datavase
+  - the disconnected layer creates an in-memory copy of part of the database
   - designed to conserve connections, increase performance and also reduec programmer errors in managing conections
 - object-relational (EntityFramework)
   - in-memory view of the database
@@ -847,7 +847,7 @@ command.Parameters.Add(new SqlParameter("name", "Robert"));
 #### Disconnected layer
 why?
 - memory is cheap and fast
-- database connections are sloq and resource consuming
+- database connections are slow and resource consuming
 - simple and clean
 - ensures that connections are closed quickly
 - allow results to be cached easier
@@ -1103,7 +1103,7 @@ context.SaveChanges();
 ### Creating a DbContext
 2 approaches:
 - Database/Model first
-> Database first = Use an existing datavase and let visual studio generate the database model
+> Database first = Use an existing database and let visual studio generate the database model
 > Model first = Create a new database or a conceptual design and visual studio will generate the database schena
 - Code first
 > Code first = Write OO code and let Entity Framework generate a database schema
