@@ -1197,10 +1197,6 @@ for lazy loading to work, the properties need to be virtual, this is because ent
   - conflicts should never happen
   - lock the database
 
-```js
-add something later
-```
-
 ### Code First database migrations:
 - the database is created from code
 - changes in code don't update the schema
